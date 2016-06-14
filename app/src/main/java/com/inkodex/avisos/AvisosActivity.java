@@ -8,24 +8,29 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 public class AvisosActivity extends AppCompatActivity {
+
+    private ListView mListView; //creamos una clase privada mListview
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_avisos);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        mListView = (ListView)findViewById(R.id.listView);// busca la LisView con el id
+        //the arrayAdapter is the controller in our
+        //model-view-controller relationship. (controller)
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>( // arrayAdapater toma 3 parametros
+                //context
+                this, // el primer parametro es el contexto
+                R.layout.avisos_row,// adapater tiene que saber cual es el layout
+                //row (view)
+                R.id.row_text, //el campo o los campos se le pasa el id
+                //data (model) con datos falsos para probar nuestra Listview
+                new String[]{"first record","second record","third record"});// el ultimo parametro es un string
+        mListView.setAdapter(arrayAdapter);
     }
 
     @Override
