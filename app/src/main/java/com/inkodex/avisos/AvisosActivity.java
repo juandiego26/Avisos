@@ -1,37 +1,69 @@
 package com.inkodex.avisos;
 
+import android.database.Cursor;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class AvisosActivity extends AppCompatActivity {
 
     private ListView mListView; //creamos una clase privada mListview
+    private AvisosDBAdapter mDBAdapter;
+    private AvisosSimpleCursorAdapter mCursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_avisos);
-        mListView = (ListView)findViewById(R.id.listView);// busca la LisView con el id
-        //the arrayAdapter is the controller in our
-        //model-view-controller relationship. (controller)
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>( // arrayAdapater toma 3 parametros
+        mListView = (ListView) findViewById(R.id.listView);
+        findViewById(R.id.listView);
+        mListView.setDivider(null);
+        mDBAdapter = new AvisosDBAdapter(this);
+        mDBAdapter.open();
+
+       if (savedInstanceState == null){
+
+            //limpiar todos los datos
+            mDBAdapter.deleteAllReminders();
+            //add algunos datos
+            mDBAdapter.CreateReminder("Visitar el centro de recogida", true);
+            mDBAdapter.CreateReminder("Enviar los regalos prometidos",false);
+            mDBAdapter.CreateReminder("Hacer la compra semanal", false);
+            mDBAdapter.CreateReminder("Comprobar el correo", false);
+        }
+
+        Cursor cursor = mDBAdapter.fetchAllReminders();
+        // desde las columnas definidas en la base de datos
+        String[] from = new String[]{
+                AvisosDBAdapter.COL_CONTENT
+        };
+
+        // a la id de views en el layout
+
+        int[] to = new int[]{
+                R.id.row_text
+        };
+
+        mCursorAdapter = new AvisosSimpleCursorAdapter(
                 //context
-                this, // el primer parametro es el contexto
-                R.layout.avisos_row,// adapater tiene que saber cual es el layout
-                //row (view)
-                R.id.row_text, //el campo o los campos se le pasa el id
-                //data (model) con datos falsos para probar nuestra Listview
-                new String[]{"first record","second record","third record"});// el ultimo parametro es un string
-        mListView.setAdapter(arrayAdapter);
+                AvisosActivity.this,
+                // el layout de la fila
+                R.layout.avisos_row,
+                //cursor
+                cursor,
+                // desde columnas definidas en la base de datos
+                from,
+                // a las ids de los views en el Layout
+                to,
+                //flag no usado
+                0);
+        // el cursorAdapter (controller) está ahora actualizando la Listview (Vista)
+        // con los datos de la base de datos (Modelo)
+
+        mListView.setAdapter(mCursorAdapter);
     }
 
     @Override
