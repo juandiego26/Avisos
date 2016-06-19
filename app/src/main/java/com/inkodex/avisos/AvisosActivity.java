@@ -1,17 +1,25 @@
 package com.inkodex.avisos;
 
+import android.app.Dialog;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class AvisosActivity extends AppCompatActivity {
-
-    private ListView mListView; //creamos una clase privada mListview
-    private AvisosDBAdapter mDBAdapter;
+    private ListView mListView;
+    private AvisosDBAdapter mDbAdapter;
     private AvisosSimpleCursorAdapter mCursorAdapter;
 
     @Override
@@ -21,28 +29,53 @@ public class AvisosActivity extends AppCompatActivity {
         mListView = (ListView) findViewById(R.id.listView);
         findViewById(R.id.listView);
         mListView.setDivider(null);
-        mDBAdapter = new AvisosDBAdapter(this);
-        mDBAdapter.open();
+        mDbAdapter = new AvisosDBAdapter(this);
+        mDbAdapter.open();
 
-       if (savedInstanceState == null){
 
-            //limpiar todos los datos
-            mDBAdapter.deleteAllReminders();
-            //add algunos datos
-            mDBAdapter.CreateReminder("Visitar el centro de recogida", true);
-            mDBAdapter.CreateReminder("Enviar los regalos prometidos",false);
-            mDBAdapter.CreateReminder("Hacer la compra semanal", false);
-            mDBAdapter.CreateReminder("Comprobar el correo", false);
-        }
 
-        Cursor cursor = mDBAdapter.fetchAllReminders();
-        // desde las columnas definidas en la base de datos
+        // cuando pulsamos un item individual en la  listview
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            public void onItemClick(AdapterView<?> parent, View view, final int masterListPosition, long id) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(AvisosActivity.this);
+                ListView modeListView = new ListView(AvisosActivity.this);
+                String[] modes = new String[] { "Editar Aviso", "Borrar Aviso" };
+                ArrayAdapter<String> modeAdapter = new ArrayAdapter<>(AvisosActivity.this,
+                        android.R.layout.simple_list_item_1, android.R.id.text1, modes);
+                modeListView.setAdapter(modeAdapter);
+                builder.setView(modeListView);
+                final Dialog dialog = builder.create();
+                dialog.show();
+                modeListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        //editar aviso
+                        if (position == 0) {
+                            Toast.makeText(AvisosActivity.this, "editar "
+                                    + masterListPosition, Toast.LENGTH_SHORT).show();
+                            //borrar aviso
+                        } else {
+                            Toast.makeText(AvisosActivity.this, "borrar "
+                                    + masterListPosition, Toast.LENGTH_SHORT).show();
+                        }
+                        dialog.dismiss();
+                    }
+                });
+            }
+        });
+
+
+
+
+        Cursor cursor = mDbAdapter.fetchAllReminders();
+
+        //desde las columnas definidas en la base de datos
         String[] from = new String[]{
                 AvisosDBAdapter.COL_CONTENT
         };
 
-        // a la id de views en el layout
-
+        //a la id de views en el layout
         int[] to = new int[]{
                 R.id.row_text
         };
@@ -50,21 +83,22 @@ public class AvisosActivity extends AppCompatActivity {
         mCursorAdapter = new AvisosSimpleCursorAdapter(
                 //context
                 AvisosActivity.this,
-                // el layout de la fila
+                //el layout de la fila
                 R.layout.avisos_row,
                 //cursor
                 cursor,
-                // desde columnas definidas en la base de datos
+                //desde columnas definidas en la base de datos
                 from,
-                // a las ids de los views en el Layout
+                //a las ids de views en el layout
                 to,
-                //flag no usado
+                //flag - no usado
                 0);
-        // el cursorAdapter (controller) está ahora actualizando la Listview (Vista)
-        // con los datos de la base de datos (Modelo)
 
+        //el cursorAdapter (controller) está ahora actualizando la listView (view)
+        //con datos desde la base de datos (modelo)
         mListView.setAdapter(mCursorAdapter);
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -75,16 +109,13 @@ public class AvisosActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_nuevo:
-                //crear un nuevo aviso
-                Log.d(getLocalClassName(),"crear nuevo aviso");
+                //crear nuevo aviso
+                Log.d(getLocalClassName(), "crear  nuevo Aviso");
                 return true;
             case R.id.action_salir:
-                finish();// aca se cierra la aplicación
+                finish();
                 return true;
             default:
                 return false;
